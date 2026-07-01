@@ -45,7 +45,7 @@ jobs:
             --type app-image `
             --icon src/main/resources/icon.ico `
             --app-version $version `
-            --description "Таймер выключения, перезагрузки и сна" `
+            --description "PC shutdown timer" `
             --vendor BloodSUCKER `
             --copyright "Copyright (c) BloodSUCKER" `
             --dest dist
