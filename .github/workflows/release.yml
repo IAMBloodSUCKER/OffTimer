@@ -25,14 +25,13 @@ jobs:
         run: mvn -B package -DskipTests
 
       - name: Build Windows icon
-        shell: pwsh
-        run: ./scripts/build-icon.ps1
+        run: java scripts/IconBuilder.java .
 
       - name: Create portable app
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.10' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.11' }
 
           $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
           jlink --add-modules $modules --strip-debug --compress zip-6 --no-header-files --no-man-pages --output dist/runtime
@@ -50,6 +49,9 @@ jobs:
             --vendor BloodSUCKER `
             --copyright "Copyright (c) BloodSUCKER" `
             --dest dist
+
+          Invoke-WebRequest -Uri "https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe" -OutFile rcedit.exe
+          ./rcedit.exe dist/OffTimer/OffTimer.exe --set-icon src/main/resources/icon.ico
 
           Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
 
