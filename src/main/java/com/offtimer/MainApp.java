@@ -16,7 +16,7 @@ import java.awt.event.WindowEvent;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.19";
+    private static final String VERSION = "1.0.20";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;
@@ -52,7 +52,7 @@ public class MainApp {
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.setResizable(false);
-        frame.setSize(640, 470);
+        frame.setSize(640, 500);
         frame.setLocationRelativeTo(null);
 
         frame.setIconImage(AppIcon.renderTrayIcon(32));

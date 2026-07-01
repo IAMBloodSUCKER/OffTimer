@@ -19,19 +19,25 @@ public class SupportBar extends JPanel {
         setBackground(AppTheme.PANEL_ELEVATED);
         setBorder(BorderFactory.createCompoundBorder(
                 new MatteBorder(1, 0, 0, 0, AppTheme.BORDER),
-                new EmptyBorder(7, 12, 7, 10)
+                new EmptyBorder(8, 12, 8, 10)
         ));
 
-        JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        textPanel.setOpaque(false);
+        JPanel textColumn = new JPanel();
+        textColumn.setLayout(new BoxLayout(textColumn, BoxLayout.Y_AXIS));
+        textColumn.setOpaque(false);
 
-        JLabel title = label("Support the project", AppTheme.TEXT, true);
-        JLabel author = label(" Author: BloodSUCKER ", AppTheme.TEXT_MUTED, false);
+        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        topRow.setOpaque(false);
+        topRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        topRow.add(label("Support the project", AppTheme.TEXT, true));
+        topRow.add(label(" Author: BloodSUCKER", AppTheme.TEXT_MUTED, false));
+
         JLabel wallet = walletLabel(parent);
+        wallet.setAlignmentX(Component.LEFT_ALIGNMENT);
+        wallet.setBorder(new EmptyBorder(4, 0, 0, 0));
 
-        textPanel.add(title);
-        textPanel.add(author);
-        textPanel.add(wallet);
+        textColumn.add(topRow);
+        textColumn.add(wallet);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         buttons.setOpaque(false);
@@ -45,7 +51,7 @@ public class SupportBar extends JPanel {
         buttons.add(copyButton);
         buttons.add(detailsButton);
 
-        add(textPanel, BorderLayout.CENTER);
+        add(textColumn, BorderLayout.CENTER);
         add(buttons, BorderLayout.EAST);
     }
 
@@ -58,7 +64,7 @@ public class SupportBar extends JPanel {
 
     private static JLabel walletLabel(Component parent) {
         JLabel wallet = new JLabel(WALLET);
-        wallet.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+        wallet.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         wallet.setForeground(AppTheme.ACCENT);
         wallet.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         wallet.setToolTipText("Open wallet on Etherscan");
