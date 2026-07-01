@@ -21,6 +21,9 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Install WiX
+        run: choco install wixtoolset --no-progress -y
+
       - name: Build JAR
         run: mvn -B package -DskipTests
 
@@ -35,7 +38,7 @@ jobs:
           $stream.Close()
           $png.Dispose()
 
-      - name: Create Windows app
+      - name: Create Windows installer
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
@@ -46,28 +49,23 @@ jobs:
             --name OffTimer `
             --main-jar offtimer.jar `
             --main-class com.offtimer.MainApp `
-            --type app-image `
+            --type exe `
             --icon src/main/resources/icon.ico `
             --app-version $version `
             --description "Таймер выключения, перезагрузки и сна" `
             --vendor OffTimer `
-            --dest dist
+            --dest dist `
+            --win-shortcut `
+            --win-menu
 
-          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
+          $installer = Get-ChildItem dist -Filter "OffTimer*.exe" | Select-Object -First 1
+          Copy-Item $installer.FullName dist/OffTimer.exe
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/OffTimer-Windows.zip
-          body: |
-            ## Установка
-
-            1. Скачайте **OffTimer-Windows.zip**
-            2. Распакуйте архив
-            3. Запустите **OffTimer\OffTimer.exe**
-
-            Папку `OffTimer` можно переносить в любое место — установка не нужна.
+          files: dist/OffTimer.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
