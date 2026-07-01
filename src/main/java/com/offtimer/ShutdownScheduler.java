@@ -1,13 +1,12 @@
 package com.offtimer;
 
 import com.offtimer.model.ActionType;
+import com.offtimer.platform.PowerActions;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -165,20 +164,11 @@ public class ShutdownScheduler {
             onComplete.run();
         }
 
-        runCommand(currentAction.buildCommand());
+        PowerActions.execute(currentAction);
     }
 
     private void runCancelCommand() {
-        if (currentAction != null) {
-            runCommand(currentAction.buildCancelCommand());
-        }
-    }
-
-    private void runCommand(List<String> command) {
-        try {
-            new ProcessBuilder(command).inheritIO().start();
-        } catch (IOException ignored) {
-        }
+        // Таймер внутри приложения — отмена системной команды не нужна.
     }
 
     private static int parseNonNegative(String text, String field) {

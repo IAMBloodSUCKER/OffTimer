@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.5' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.6' }
 
           jpackage `
             --input target `
@@ -46,7 +46,8 @@ jobs:
             --copyright "Copyright (c) BloodSUCKER" `
             --dest dist `
             --win-shortcut `
-            --win-menu
+            --win-menu `
+            --win-per-user-install
 
           $installer = Get-ChildItem dist -Filter "OffTimer*.exe" | Select-Object -First 1
           Copy-Item $installer.FullName dist/OffTimer.exe
