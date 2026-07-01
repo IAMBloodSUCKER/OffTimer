@@ -16,7 +16,7 @@ import java.awt.event.WindowEvent;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.14";
+    private static final String VERSION = "1.0.15";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;

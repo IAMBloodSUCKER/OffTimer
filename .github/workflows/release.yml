@@ -9,7 +9,7 @@ on:
       version:
         description: 'Version number (e.g. 1.0.14)'
         required: true
-        default: '1.0.14'
+        default: '1.0.15'
 
 permissions:
   contents: write
@@ -39,7 +39,11 @@ jobs:
           Write-Host "Building version $v"
 
       - name: Build icons
-        run: mvn -B -DskipTests compile exec:java "-Dexec.mainClass=com.offtimer.build.IconBuilderMain" "-Dexec.args=."
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force target/iconbuild | Out-Null
+          javac -d target/iconbuild src/main/java/com/offtimer/ui/AppIcon.java src/main/java/com/offtimer/build/IconBuilderMain.java
+          java -cp target/iconbuild com.offtimer.build.IconBuilderMain .
 
       - name: Build JAR
         run: mvn -B package -DskipTests
