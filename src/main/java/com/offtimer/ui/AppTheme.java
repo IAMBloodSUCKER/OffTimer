@@ -115,6 +115,21 @@ public final class AppTheme {
         return button;
     }
 
+    public static JButton outlineButton(String text) {
+        JButton button = new JButton(text);
+        button.putClientProperty("JButton.buttonType", "roundRect");
+        button.setFocusable(false);
+        button.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        button.setBackground(PANEL_ELEVATED);
+        button.setForeground(TEXT);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT),
+                new EmptyBorder(4, 12, 4, 12)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
     public static void styleRadio(JRadioButton radio) {
         radio.setBackground(PANEL);
         radio.setForeground(TEXT);

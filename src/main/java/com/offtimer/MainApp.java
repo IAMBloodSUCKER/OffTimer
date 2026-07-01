@@ -4,6 +4,7 @@ import com.offtimer.model.ActionType;
 import com.offtimer.model.TimerMode;
 import com.offtimer.ui.AppTheme;
 import com.offtimer.ui.CardPanel;
+import com.offtimer.ui.SupportBar;
 import com.offtimer.ui.TitleBar;
 
 import javax.imageio.ImageIO;
@@ -16,7 +17,7 @@ import java.io.InputStream;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.2";
+    private static final String VERSION = "1.0.3";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;
@@ -52,7 +53,7 @@ public class MainApp {
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.setResizable(false);
-        frame.setSize(400, 380);
+        frame.setSize(400, 430);
         frame.setLocationRelativeTo(null);
 
         try (InputStream stream = getClass().getResourceAsStream("/icon.png")) {
@@ -95,6 +96,7 @@ public class MainApp {
         content.add(buildFooter());
 
         shell.add(content, BorderLayout.CENTER);
+        shell.add(new SupportBar(frame), BorderLayout.SOUTH);
         frame.setContentPane(shell);
 
         startButton.addActionListener(e -> startTimer());
