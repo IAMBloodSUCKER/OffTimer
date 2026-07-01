@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 1.0.14)'
+        required: true
+        default: '1.0.14'
 
 permissions:
   contents: write
@@ -21,8 +26,20 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            $v = '${{ github.ref_name }}' -replace '^v',''
+          } else {
+            $v = '${{ inputs.version }}'
+          }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Building version $v"
+
       - name: Build icons
-        run: mvn -q -DskipTests compile exec:java -Dexec.mainClass=com.offtimer.build.IconBuilderMain -Dexec.args=.
+        run: mvn -B -DskipTests compile exec:java "-Dexec.mainClass=com.offtimer.build.IconBuilderMain" "-Dexec.args=."
 
       - name: Build JAR
         run: mvn -B package -DskipTests
@@ -30,10 +47,10 @@ jobs:
       - name: Create portable app
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.13' }
+          $version = '${{ steps.version.outputs.version }}'
 
           $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
+          if (-not $modules) { throw "jdeps returned no modules" }
           jlink --add-modules $modules --strip-debug --compress zip-6 --no-header-files --no-man-pages --output dist/runtime
 
           jpackage `
@@ -57,6 +74,7 @@ jobs:
 
           Copy-Item src/main/resources/icon.ico dist/OffTimer/OffTimer.ico -Force
           Copy-Item scripts/CreateShortcut.bat dist/OffTimer/CreateShortcut.bat -Force
+          Copy-Item scripts/Uninstall.bat dist/OffTimer/Uninstall.bat -Force
 
           Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
 
@@ -75,40 +93,20 @@ jobs:
             Sort-Object FullName -Descending |
             Select-Object -First 1 -ExpandProperty FullName
 
-          if (-not $signtool) {
-            throw "signtool.exe not found"
-          }
+          if (-not $signtool) { throw "signtool.exe not found" }
 
           & $signtool sign /f $pfxPath /p $env:SIGNING_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /d "OffTimer" /du "https://github.com/IAMBloodSUCKER/OffTimer" $exe
-          & $signtool verify /pa /v $exe
-
           Remove-Item dist/OffTimer-Windows.zip -ErrorAction SilentlyContinue
           Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
 
-      - name: Upload release asset
+      - name: Publish release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
           files: dist/OffTimer-Windows.zip
+          make_latest: true
+          generate_release_notes: true
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-jar:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
-
-      - name: Build JAR
-        run: mvn -B package -DskipTests
-
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: offtimer-jar
-          path: target/offtimer.jar
