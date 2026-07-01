@@ -32,7 +32,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.9' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.10' }
 
           $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
           jlink --add-modules $modules --strip-debug --compress zip-6 --no-header-files --no-man-pages --output dist/runtime
