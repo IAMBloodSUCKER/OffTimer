@@ -9,7 +9,7 @@ on:
       version:
         description: 'Version number (e.g. 1.0.14)'
         required: true
-        default: '1.0.17'
+        default: '1.0.18'
 
 permissions:
   contents: write
@@ -52,13 +52,9 @@ jobs:
         shell: pwsh
         run: |
           $version = '${{ steps.version.outputs.version }}'
-
-          $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
-          if (-not $modules) { throw "jdeps returned no modules" }
-          jlink --add-modules $modules --strip-debug --compress 2 --no-header-files --no-man-pages --output dist/runtime
+          $ErrorActionPreference = 'Stop'
 
           jpackage `
-            --runtime-image dist/runtime `
             --input target `
             --name OffTimer `
             --main-jar offtimer.jar `
