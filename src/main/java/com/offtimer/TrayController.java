@@ -117,8 +117,14 @@ public class TrayController {
             if (stream == null) {
                 return createFallbackIcon(size, new Color(26, 39, 68));
             }
-            BufferedImage image = ImageIO.read(stream);
-            return image.getScaledInstance(size, size, Image.SCALE_SMOOTH);
+            BufferedImage source = ImageIO.read(stream);
+            BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = scaled.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.drawImage(source, 0, 0, size, size, null);
+            g.dispose();
+            return scaled;
         }
     }
 

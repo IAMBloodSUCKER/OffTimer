@@ -27,22 +27,11 @@ jobs:
       - name: Build JAR
         run: mvn -B package -DskipTests
 
-      - name: Prepare Windows icon
-        shell: pwsh
-        run: |
-          Add-Type -AssemblyName System.Drawing
-          $png = [System.Drawing.Bitmap]::FromFile("$PWD\src\main\resources\icon.png")
-          $icon = [System.Drawing.Icon]::FromHandle($png.GetHicon())
-          $stream = [System.IO.File]::Create("$PWD\src\main\resources\icon.ico")
-          $icon.Save($stream)
-          $stream.Close()
-          $png.Dispose()
-
       - name: Create Windows installer
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.4' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.5' }
 
           jpackage `
             --input target `
