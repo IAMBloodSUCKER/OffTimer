@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build JAR
+        run: mvn -B package -DskipTests
+
+      - name: Prepare Windows icon
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $png = [System.Drawing.Bitmap]::FromFile("$PWD\src\main\resources\icon.png")
+          $icon = [System.Drawing.Icon]::FromHandle($png.GetHicon())
+          $stream = [System.IO.File]::Create("$PWD\src\main\resources\icon.ico")
+          $icon.Save($stream)
+          $stream.Close()
+          $png.Dispose()
+
+      - name: Create Windows app
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v',''
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.0' }
+
+          jpackage `
+            --input target `
+            --name OffTimer `
+            --main-jar offtimer.jar `
+            --main-class com.offtimer.MainApp `
+            --type app-image `
+            --icon src/main/resources/icon.ico `
+            --app-version $version `
+            --description "Таймер выключения, перезагрузки и сна" `
+            --vendor OffTimer `
+            --dest dist
+
+          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/OffTimer-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build JAR
+        run: mvn -B package -DskipTests
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: offtimer-jar
+          path: target/offtimer.jar
