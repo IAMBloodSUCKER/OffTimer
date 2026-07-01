@@ -3,21 +3,20 @@ package com.offtimer;
 import com.offtimer.model.ActionType;
 import com.offtimer.model.TimerMode;
 import com.offtimer.ui.AppTheme;
+import com.offtimer.ui.AppIcon;
 import com.offtimer.ui.CardPanel;
 import com.offtimer.ui.SupportBar;
 import com.offtimer.ui.TitleBar;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.InputStream;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.12";
+    private static final String VERSION = "1.0.13";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;
@@ -53,15 +52,10 @@ public class MainApp {
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.setResizable(false);
-        frame.setSize(640, 430);
+        frame.setSize(640, 470);
         frame.setLocationRelativeTo(null);
 
-        try (InputStream stream = getClass().getResourceAsStream("/icon.png")) {
-            if (stream != null) {
-                frame.setIconImage(ImageIO.read(stream));
-            }
-        } catch (Exception ignored) {
-        }
+        frame.setIconImage(AppIcon.renderTrayIcon(32));
 
         frame.addWindowListener(new WindowAdapter() {
             @Override

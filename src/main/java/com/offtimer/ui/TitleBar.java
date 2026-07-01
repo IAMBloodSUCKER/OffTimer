@@ -15,10 +15,16 @@ public class TitleBar extends JPanel {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(10, 14, 10, 10));
 
+        JPanel west = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        west.setOpaque(false);
+
+        JLabel iconLabel = new JLabel(new ImageIcon(AppIcon.renderTrayIcon(18)));
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(AppTheme.FONT_TITLE);
         titleLabel.setForeground(AppTheme.TEXT);
-        add(titleLabel, BorderLayout.WEST);
+        west.add(iconLabel);
+        west.add(titleLabel);
+        add(west, BorderLayout.WEST);
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         controls.setOpaque(false);
@@ -47,6 +53,8 @@ public class TitleBar extends JPanel {
         addMouseMotionListener(dragger);
         titleLabel.addMouseListener(dragger);
         titleLabel.addMouseMotionListener(dragger);
+        iconLabel.addMouseListener(dragger);
+        iconLabel.addMouseMotionListener(dragger);
     }
 
     private static JButton windowButton(String text, Color color, Runnable action) {

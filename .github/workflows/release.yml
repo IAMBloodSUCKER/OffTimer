@@ -21,17 +21,17 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Build icons
+        run: mvn -q -DskipTests compile exec:java -Dexec.mainClass=com.offtimer.build.IconBuilderMain -Dexec.args=.
+
       - name: Build JAR
         run: mvn -B package -DskipTests
-
-      - name: Build Windows icon
-        run: java scripts/IconBuilder.java .
 
       - name: Create portable app
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.12' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.13' }
 
           $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
           jlink --add-modules $modules --strip-debug --compress zip-6 --no-header-files --no-man-pages --output dist/runtime

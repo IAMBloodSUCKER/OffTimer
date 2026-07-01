@@ -1,15 +1,13 @@
 package com.offtimer;
 
 import com.offtimer.model.ActionType;
+import com.offtimer.ui.AppIcon;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class TrayController {
 
@@ -21,13 +19,13 @@ public class TrayController {
     private Runnable onExit;
     private Runnable onCancelTimer;
 
-    public TrayController() throws AWTException, IOException {
+    public TrayController() throws AWTException {
         if (!SystemTray.isSupported()) {
             throw new UnsupportedOperationException("System tray не поддерживается");
         }
 
-        normalIcon = loadIcon(16);
-        activeIcon = createActiveIcon();
+        normalIcon = AppIcon.renderTrayIcon(16);
+        activeIcon = renderActiveTrayIcon(16);
         systemTray = SystemTray.getSystemTray();
 
         PopupMenu menu = new PopupMenu();
@@ -56,7 +54,7 @@ public class TrayController {
         menu.add(exitItem);
 
         trayIcon = new TrayIcon(normalIcon, "OffTimer", menu);
-        trayIcon.setImageAutoSize(true);
+        trayIcon.setImageAutoSize(false);
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -112,34 +110,14 @@ public class TrayController {
         systemTray.remove(trayIcon);
     }
 
-    private Image loadIcon(int size) throws IOException {
-        try (InputStream stream = getClass().getResourceAsStream("/icon.png")) {
-            if (stream == null) {
-                return createFallbackIcon(size, new Color(26, 39, 68));
-            }
-            BufferedImage source = ImageIO.read(stream);
-            BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = scaled.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.drawImage(source, 0, 0, size, size, null);
-            g.dispose();
-            return scaled;
-        }
-    }
-
-    private Image createActiveIcon() throws IOException {
-        return createFallbackIcon(16, new Color(220, 80, 60));
-    }
-
-    private Image createFallbackIcon(int size, Color color) {
+    private static Image renderActiveTrayIcon(int size) {
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setColor(color);
+        g.setColor(new Color(220, 80, 60));
         g.fillOval(1, 1, size - 2, size - 2);
         g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke(1.5f));
+        g.setStroke(new BasicStroke(Math.max(1.2f, size * 0.1f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         int cx = size / 2;
         g.drawLine(cx, size / 4, cx, size / 2);
         g.drawArc(size / 4, size / 4, size / 2, size / 2, 45, 270);
