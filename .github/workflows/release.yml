@@ -21,43 +21,41 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Install WiX
-        run: choco install wixtoolset --no-progress -y
-
       - name: Build JAR
         run: mvn -B package -DskipTests
 
-      - name: Create Windows installer
+      - name: Create portable app
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.7' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.8' }
+
+          $modules = jdeps --multi-release 17 --print-module-deps --ignore-including-deps -R target/offtimer.jar
+          jlink --add-modules $modules --strip-debug --compress zip-6 --no-header-files --no-man-pages --output dist/runtime
 
           jpackage `
+            --runtime-image dist/runtime `
             --input target `
             --name OffTimer `
             --main-jar offtimer.jar `
             --main-class com.offtimer.MainApp `
-            --type exe `
+            --type app-image `
             --icon src/main/resources/icon.ico `
             --app-version $version `
             --description "Таймер выключения, перезагрузки и сна" `
             --vendor BloodSUCKER `
             --copyright "Copyright (c) BloodSUCKER" `
-            --dest dist `
-            --win-shortcut `
-            --win-menu `
-            --win-per-user-install
+            --dest dist
 
-          $installer = Get-ChildItem dist -Filter "OffTimer*.exe" | Select-Object -First 1
-          Copy-Item $installer.FullName dist/OffTimer.exe
+          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
 
-      - name: Sign installer
+      - name: Sign executable
         shell: pwsh
         env:
           SIGNING_CERT: ${{ secrets.WINDOWS_SIGNING_CERT }}
           SIGNING_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
         run: |
+          $exe = "dist/OffTimer/OffTimer.exe"
           $pfxPath = "signing.pfx"
           $pfxPassword = $env:SIGNING_PASSWORD
 
@@ -86,14 +84,17 @@ jobs:
             throw "signtool.exe not found"
           }
 
-          & $signtool sign /f $pfxPath /p $pfxPassword /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /d "OffTimer" /du "https://github.com/IAMBloodSUCKER/OffTimer" dist/OffTimer.exe
-          & $signtool verify /pa /v dist/OffTimer.exe
+          & $signtool sign /f $pfxPath /p $pfxPassword /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /d "OffTimer" /du "https://github.com/IAMBloodSUCKER/OffTimer" $exe
+          & $signtool verify /pa /v $exe
+
+          Remove-Item dist/OffTimer-Windows.zip -ErrorAction SilentlyContinue
+          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/OffTimer.exe
+          files: dist/OffTimer-Windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
