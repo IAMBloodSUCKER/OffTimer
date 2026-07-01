@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.6' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.7' }
 
           jpackage `
             --input target `
@@ -51,6 +51,43 @@ jobs:
 
           $installer = Get-ChildItem dist -Filter "OffTimer*.exe" | Select-Object -First 1
           Copy-Item $installer.FullName dist/OffTimer.exe
+
+      - name: Sign installer
+        shell: pwsh
+        env:
+          SIGNING_CERT: ${{ secrets.WINDOWS_SIGNING_CERT }}
+          SIGNING_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+        run: |
+          $pfxPath = "signing.pfx"
+          $pfxPassword = $env:SIGNING_PASSWORD
+
+          if ($env:SIGNING_CERT) {
+            [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:SIGNING_CERT))
+          } else {
+            $pfxPassword = "offtimer-signing"
+            $cert = New-SelfSignedCertificate `
+              -Type CodeSigningCert `
+              -Subject "CN=BloodSUCKER, O=BloodSUCKER, C=RU" `
+              -KeyAlgorithm RSA `
+              -KeyLength 4096 `
+              -HashAlgorithm SHA256 `
+              -KeyUsage DigitalSignature `
+              -CertStoreLocation Cert:\CurrentUser\My `
+              -NotAfter (Get-Date).AddYears(10) `
+              -FriendlyName "BloodSUCKER"
+            Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password (ConvertTo-SecureString $pfxPassword -AsPlainText -Force) | Out-Null
+          }
+
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" -ErrorAction SilentlyContinue |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1 -ExpandProperty FullName
+
+          if (-not $signtool) {
+            throw "signtool.exe not found"
+          }
+
+          & $signtool sign /f $pfxPath /p $pfxPassword /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /d "OffTimer" /du "https://github.com/IAMBloodSUCKER/OffTimer" dist/OffTimer.exe
+          & $signtool verify /pa /v dist/OffTimer.exe
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
