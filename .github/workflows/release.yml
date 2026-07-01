@@ -42,7 +42,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.0' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.2' }
 
           jpackage `
             --input target `

@@ -6,7 +6,7 @@
 
     <groupId>com.offtimer</groupId>
     <artifactId>offtimer</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>OffTimer</name>
@@ -23,6 +23,11 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.5.4</version>
         </dependency>
     </dependencies>
 
