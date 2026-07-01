@@ -60,6 +60,14 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist/OffTimer-Windows.zip
+          body: |
+            ## Установка
+
+            1. Скачайте **OffTimer-Windows.zip**
+            2. Распакуйте архив
+            3. Запустите **OffTimer\OffTimer.exe**
+
+            Папку `OffTimer` можно переносить в любое место — установка не нужна.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
