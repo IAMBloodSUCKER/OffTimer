@@ -17,7 +17,7 @@ import java.io.InputStream;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.11";
+    private static final String VERSION = "1.0.12";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;

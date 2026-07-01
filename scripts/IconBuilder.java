@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,49 +12,53 @@ import java.util.List;
 
 public class IconBuilder {
 
-    private static final Color BACKGROUND = new Color(26, 39, 68);
+    private static final Color BLUE = new Color(59, 130, 246);
+    private static final Color BLUE_DARK = new Color(37, 99, 235);
 
     public static void main(String[] args) throws Exception {
         Path root = Paths.get(args.length > 0 ? args[0] : ".");
         Path png = root.resolve("src/main/resources/icon.png");
         Path ico = root.resolve("src/main/resources/icon.ico");
 
-        BufferedImage source = ImageIO.read(png.toFile());
-        BufferedImage flat = flatten(source);
-        ImageIO.write(flat, "png", png.toFile());
+        BufferedImage source = renderIcon(512);
+        ImageIO.write(source, "png", png.toFile());
 
         int[] sizes = {16, 32, 48, 64, 128, 256};
         List<byte[]> images = new ArrayList<>();
         List<Integer> sizeList = new ArrayList<>();
         for (int size : sizes) {
-            images.add(encodeBmp(scale(flat, size)));
+            images.add(encodeBmp(renderIcon(size)));
             sizeList.add(size);
         }
         writeIco(ico, images, sizeList);
         System.out.println("Created " + ico.toAbsolutePath());
     }
 
-    private static BufferedImage flatten(BufferedImage source) {
-        BufferedImage out = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = out.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.setColor(BACKGROUND);
-        g.fillRect(0, 0, out.getWidth(), out.getHeight());
-        g.drawImage(source, 0, 0, null);
-        g.dispose();
-        return out;
-    }
-
-    private static BufferedImage scale(BufferedImage source, int size) {
-        BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = out.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+    private static BufferedImage renderIcon(int size) {
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setColor(BACKGROUND);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+        g.setColor(BLUE);
         g.fillRect(0, 0, size, size);
-        g.drawImage(source, 0, 0, size, size, null);
+
+        int inset = Math.max(1, size / 18);
+        g.setColor(BLUE_DARK);
+        g.fill(new Ellipse2D.Float(inset, inset, size - inset * 2f, size - inset * 2f));
+
+        g.setColor(Color.WHITE);
+        float stroke = Math.max(1.8f, size * 0.085f);
+        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+        int cx = size / 2;
+        int cy = size / 2 + Math.max(1, size / 24);
+        int radius = Math.max(3, size / 4);
+        g.drawArc(cx - radius, cy - radius, radius * 2, radius * 2, 52, 256);
+        g.drawLine(cx, cy - radius - size / 14, cx, cy - size / 10);
+
         g.dispose();
-        return out;
+        return image;
     }
 
     private static byte[] encodeBmp(BufferedImage image) throws IOException {
@@ -79,11 +84,11 @@ public class IconBuilder {
 
         for (int y = h - 1; y >= 0; y--) {
             for (int x = 0; x < w; x++) {
-                int argb = image.getRGB(x, y);
-                out.write(argb & 0xFF);
-                out.write((argb >> 8) & 0xFF);
-                out.write((argb >> 16) & 0xFF);
-                out.write((argb >> 24) & 0xFF);
+                int rgb = image.getRGB(x, y);
+                out.write(rgb & 0xFF);
+                out.write((rgb >> 8) & 0xFF);
+                out.write((rgb >> 16) & 0xFF);
+                out.write(255);
             }
         }
 
