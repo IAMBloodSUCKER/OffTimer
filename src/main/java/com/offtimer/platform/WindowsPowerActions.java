@@ -6,7 +6,6 @@ import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinUser;
 
@@ -33,12 +32,12 @@ final class WindowsPowerActions {
     private static boolean shutdown() {
         enableShutdownPrivilege();
         int flags = WinUser.EWX_SHUTDOWN | WinUser.EWX_POWEROFF | WinUser.EWX_HYBRID_SHUTDOWN;
-        return User32.INSTANCE.ExitWindowsEx(flags, 0);
+        return User32.INSTANCE.ExitWindowsEx(new WinDef.UINT(flags), new WinDef.DWORD(0)).booleanValue();
     }
 
     private static boolean restart() {
         enableShutdownPrivilege();
-        return User32.INSTANCE.ExitWindowsEx(WinUser.EWX_REBOOT, 0);
+        return User32.INSTANCE.ExitWindowsEx(new WinDef.UINT(WinUser.EWX_REBOOT), new WinDef.DWORD(0)).booleanValue();
     }
 
     private static void enableShutdownPrivilege() {

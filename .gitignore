@@ -1,5 +1,6 @@
 target/
 dist/
+.tools/
 *.class
 offtimer-settings.json
 

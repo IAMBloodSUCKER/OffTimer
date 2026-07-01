@@ -1,15 +1,17 @@
 package com.offtimer.ui;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
 public final class AppIcon {
 
-    private static final Color BLUE_LIGHT = new Color(96, 165, 250);
-    private static final Color BLUE = new Color(59, 130, 246);
-    private static final Color BLUE_DARK = new Color(29, 78, 216);
+    private static final Color BG_TOP = new Color(30, 41, 59);
+    private static final Color BG_BOTTOM = new Color(15, 23, 42);
+    private static final Color RING = new Color(56, 189, 248);
+    private static final Color RING_GLOW = new Color(14, 165, 233, 80);
 
     private AppIcon() {
     }
@@ -19,7 +21,7 @@ public final class AppIcon {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        drawCircleBadge(g, size);
+        drawTimerSymbol(g, size, true);
         g.dispose();
         return image;
     }
@@ -30,42 +32,43 @@ public final class AppIcon {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-        float radius = size * 0.22f;
-        g.setPaint(new GradientPaint(0, 0, BLUE_LIGHT, size, size, BLUE_DARK));
+        float radius = size * 0.24f;
+        g.setPaint(new GradientPaint(0, 0, BG_TOP, size, size, BG_BOTTOM));
         g.fill(new RoundRectangle2D.Float(0, 0, size, size, radius, radius));
 
-        drawCircleBadge(g, size);
+        g.setColor(new Color(255, 255, 255, 18));
+        g.fill(new RoundRectangle2D.Float(size * 0.06f, size * 0.05f, size * 0.88f, size * 0.35f, radius, radius));
+
+        drawTimerSymbol(g, size, false);
         g.dispose();
         return image;
     }
 
-    private static void drawCircleBadge(Graphics2D g, int size) {
-        int pad = Math.max(2, size / 8);
-        int d = size - pad * 2;
+    private static void drawTimerSymbol(Graphics2D g, int size, boolean tray) {
+        int cx = size / 2;
+        int cy = size / 2 + Math.max(0, size / 24);
+        int outer = Math.max(6, (int) (size * (tray ? 0.72 : 0.62)));
+        int ring = Math.max(4, outer / 2);
 
-        g.setPaint(new RadialGradientPaint(
-                new Point(size / 2, size / 3),
-                d * 0.75f,
-                new float[]{0f, 1f},
-                new Color[]{BLUE_LIGHT, BLUE_DARK}
+        if (!tray) {
+            g.setColor(RING_GLOW);
+            g.fill(new Ellipse2D.Float(cx - outer * 0.55f, cy - outer * 0.55f, outer * 1.1f, outer * 1.1f));
+        }
+
+        float stroke = Math.max(1.4f, size * 0.08f);
+        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.setColor(RING);
+        g.draw(new Arc2D.Float(
+                cx - outer / 2f, cy - outer / 2f, outer, outer,
+                50, 280, Arc2D.OPEN
         ));
-        g.fill(new Ellipse2D.Float(pad, pad, d, d));
-
-        g.setColor(new Color(255, 255, 255, 50));
-        g.fill(new Ellipse2D.Float(pad + d * 0.18f, pad + d * 0.12f, d * 0.35f, d * 0.22f));
 
         g.setColor(Color.WHITE);
-        float stroke = Math.max(1.5f, size * 0.075f);
-        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        float handStroke = Math.max(1.2f, stroke * 0.75f);
+        g.setStroke(new BasicStroke(handStroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.drawLine(cx, cy, cx, cy - ring / 2);
 
-        int cx = size / 2;
-        int cy = size / 2 + Math.max(1, size / 28);
-        int r = Math.max(3, d / 4);
-
-        g.drawArc(cx - r, cy - r, r * 2, r * 2, 55, 250);
-        g.drawLine(cx, cy - r - size / 16, cx, cy - size / 12);
-
-        g.setStroke(new BasicStroke(Math.max(1f, stroke * 0.55f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.drawLine(cx, cy, cx + r / 2, cy + r / 3);
+        g.setStroke(new BasicStroke(Math.max(1f, handStroke * 0.7f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.drawLine(cx, cy, cx + ring / 3, cy + ring / 4);
     }
 }

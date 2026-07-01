@@ -14,7 +14,7 @@ public class SupportBar extends JPanel {
     public static final String WALLET = "0xe4a1bf07aa8c2194ab94d72812364968ac5b58e3";
     public static final String WALLET_URL = "https://etherscan.io/address/" + WALLET;
 
-    public SupportBar(JComponent parent) {
+    public SupportBar(Component parent) {
         setLayout(new BorderLayout(8, 0));
         setBackground(AppTheme.PANEL_ELEVATED);
         setBorder(BorderFactory.createCompoundBorder(
@@ -56,7 +56,7 @@ public class SupportBar extends JPanel {
         return label;
     }
 
-    private static JLabel walletLabel(JComponent parent) {
+    private static JLabel walletLabel(Component parent) {
         JLabel wallet = new JLabel(WALLET);
         wallet.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
         wallet.setForeground(AppTheme.ACCENT);
