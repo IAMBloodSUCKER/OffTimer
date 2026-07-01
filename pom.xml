@@ -6,11 +6,15 @@
 
     <groupId>com.offtimer</groupId>
     <artifactId>offtimer</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
     <name>OffTimer</name>
     <description>Таймер выключения, перезагрузки и сна</description>
+
+    <organization>
+        <name>BloodSUCKER</name>
+    </organization>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -66,6 +70,10 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Title>OffTimer</Implementation-Title>
+                                        <Implementation-Vendor>BloodSUCKER</Implementation-Vendor>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                             <createDependencyReducedPom>false</createDependencyReducedPom>

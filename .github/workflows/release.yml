@@ -42,7 +42,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v',''
-          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.3' }
+          if ($version -eq '${{ github.ref_name }}') { $version = '1.0.4' }
 
           jpackage `
             --input target `
@@ -53,7 +53,8 @@ jobs:
             --icon src/main/resources/icon.ico `
             --app-version $version `
             --description "Таймер выключения, перезагрузки и сна" `
-            --vendor OffTimer `
+            --vendor BloodSUCKER `
+            --copyright "Copyright (c) BloodSUCKER" `
             --dest dist `
             --win-shortcut `
             --win-menu
