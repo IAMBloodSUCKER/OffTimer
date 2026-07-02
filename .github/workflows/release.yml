@@ -9,7 +9,7 @@ on:
       version:
         description: 'Version number (e.g. 1.0.14)'
         required: true
-        default: '1.0.20'
+        default: '1.0.21'
 
 permissions:
   contents: write
@@ -71,8 +71,6 @@ jobs:
           Copy-Item scripts/CreateShortcut.bat dist/OffTimer/CreateShortcut.bat -Force
           Copy-Item scripts/Uninstall.bat dist/OffTimer/Uninstall.bat -Force
 
-          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
-
       - name: Sign executable
         if: env.SIGNING_CERT != ''
         shell: pwsh
@@ -91,15 +89,40 @@ jobs:
           if (-not $signtool) { throw "signtool.exe not found" }
 
           & $signtool sign /f $pfxPath /p $env:SIGNING_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /d "OffTimer" /du "https://github.com/IAMBloodSUCKER/OffTimer" $exe
-          Remove-Item dist/OffTimer-Windows.zip -ErrorAction SilentlyContinue
-          Compress-Archive -Path dist/OffTimer -DestinationPath dist/OffTimer-Windows.zip -Force
+
+      - name: Package release exe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $config = @"
+          ;!@Install@!UTF-8!
+          Title="OffTimer"
+          BeginPrompt="Распаковать OffTimer?"
+          ExtractTitle="Подготовка..."
+          InstallPath="%USERPROFILE%\OffTimer"
+          GUIMode="2"
+          RunProgram="OffTimer.exe"
+          ;!@InstallEnd@!
+          "@
+          Set-Content -Path dist/sfx.txt -Value $config -Encoding UTF8
+
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z dist/package.7z "dist/OffTimer/*"
+
+          if (-not (Test-Path "7zextra/7zSD.sfx")) {
+            Invoke-WebRequest -Uri "https://www.7-zip.org/a/7z2409-extra.7z" -OutFile 7zextra.7z
+            & "C:\Program Files\7-Zip\7z.exe" x 7zextra.7z -o7zextra
+          }
+
+          cmd /c copy /b "7zextra\7zSD.sfx" + "dist\sfx.txt" + "dist\package.7z" "dist\OffTimer.exe"
+          if ($LASTEXITCODE -ne 0) { throw "Failed to build OffTimer.exe" }
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          files: dist/OffTimer-Windows.zip
+          files: dist/OffTimer.exe
           make_latest: true
           generate_release_notes: true
           overwrite: true

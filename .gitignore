@@ -2,6 +2,8 @@ target/
 dist/
 dist2/
 .tools/
+7zextra/
+7zextra.7z
 *.class
 offtimer-settings.json
 
