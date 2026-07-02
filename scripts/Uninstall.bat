@@ -1,8 +1,8 @@
 @echo off
 chcp 65001 >nul
-title OffTimer - Uninstall
+title OffTimer — удаление
 
-echo Closing OffTimer...
+echo Закрываю OffTimer...
 taskkill /IM OffTimer.exe /F >nul 2>&1
 
 for /f "tokens=2" %%p in ('wmic process where "name='java.exe'" get ProcessId /value 2^>nul ^| find "="') do (
@@ -12,8 +12,8 @@ for /f "tokens=2" %%p in ('wmic process where "name='java.exe'" get ProcessId /v
 
 timeout /t 1 >nul
 echo.
-echo OffTimer stopped.
-echo Delete this folder to remove the program:
+echo OffTimer закрыт.
+echo Чтобы удалить программу, удали эту папку:
 echo %~dp0
 echo.
 pause

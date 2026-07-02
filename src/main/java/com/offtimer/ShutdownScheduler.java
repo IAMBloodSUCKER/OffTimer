@@ -168,7 +168,6 @@ public class ShutdownScheduler {
     }
 
     private void runCancelCommand() {
-        // Таймер внутри приложения — отмена системной команды не нужна.
     }
 
     private static int parseNonNegative(String text, String field) {

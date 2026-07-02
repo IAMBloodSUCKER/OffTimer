@@ -29,8 +29,8 @@ public class SupportBar extends JPanel {
         JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         topRow.setOpaque(false);
         topRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        topRow.add(label("Support the project", AppTheme.TEXT, true));
-        topRow.add(label(" Author: BloodSUCKER", AppTheme.TEXT_MUTED, false));
+        topRow.add(label("Поддержать проект", AppTheme.TEXT, true));
+        topRow.add(label(" · BloodSUCKER", AppTheme.TEXT_MUTED, false));
 
         JLabel wallet = walletLabel(parent);
         wallet.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -42,14 +42,14 @@ public class SupportBar extends JPanel {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         buttons.setOpaque(false);
 
-        JButton copyButton = AppTheme.outlineButton("Copy");
+        JButton copyButton = AppTheme.outlineButton("Копировать");
         copyButton.addActionListener(e -> copyWallet(parent));
 
-        JButton detailsButton = AppTheme.outlineButton("Details");
-        detailsButton.addActionListener(e -> openWallet(parent));
+        JButton openButton = AppTheme.outlineButton("Открыть");
+        openButton.addActionListener(e -> openWallet(parent));
 
         buttons.add(copyButton);
-        buttons.add(detailsButton);
+        buttons.add(openButton);
 
         add(textColumn, BorderLayout.CENTER);
         add(buttons, BorderLayout.EAST);
@@ -67,7 +67,7 @@ public class SupportBar extends JPanel {
         wallet.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         wallet.setForeground(AppTheme.ACCENT);
         wallet.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        wallet.setToolTipText("Open wallet on Etherscan");
+        wallet.setToolTipText("Открыть на Etherscan");
         wallet.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -80,7 +80,7 @@ public class SupportBar extends JPanel {
     private static void copyWallet(Component parent) {
         Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(WALLET), null);
-        JOptionPane.showMessageDialog(parent, "Address copied to clipboard", "OffTimer",
+        JOptionPane.showMessageDialog(parent, "Адрес скопирован", "OffTimer",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -90,7 +90,7 @@ public class SupportBar extends JPanel {
         } catch (Exception ex) {
             copyWallet(parent);
             JOptionPane.showMessageDialog(parent,
-                    "Could not open browser. Address copied to clipboard.\n" + WALLET_URL,
+                    "Браузер не открылся. Адрес скопирован.\n" + WALLET_URL,
                     "OffTimer", JOptionPane.INFORMATION_MESSAGE);
         }
     }

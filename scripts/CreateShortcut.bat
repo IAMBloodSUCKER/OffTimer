@@ -5,7 +5,7 @@ set "EXE=%TARGET%OffTimer.exe"
 set "ICON=%TARGET%OffTimer.ico"
 
 if not exist "%EXE%" (
-    echo OffTimer.exe not found in this folder.
+    echo Не найден OffTimer.exe в этой папке.
     pause
     exit /b 1
 )
@@ -18,5 +18,5 @@ powershell -NoProfile -Command ^
   "$s.Description = 'OffTimer';" ^
   "$s.Save()"
 
-echo Shortcut created on Desktop with icon.
+echo Ярлык создан на рабочем столе.
 pause

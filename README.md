@@ -1,33 +1,19 @@
-<p align="center">
-  <img src="src/main/resources/icon.png" alt="OffTimer" width="96" height="96">
-</p>
+# OffTimer
 
-<h1 align="center">OffTimer</h1>
+Таймер выключения, перезагрузки и сна для Windows.
 
-<p align="center">
-  Таймер выключения, перезагрузки, гибернации и сна для Windows
-</p>
-
-<p align="center">
-  <a href="https://github.com/IAMBloodSUCKER/OffTimer/releases/latest"><strong>⬇ Скачать OffTimer.exe</strong></a>
-</p>
-
----
+[**Скачать OffTimer.exe**](https://github.com/IAMBloodSUCKER/OffTimer/releases/latest)
 
 ## Запуск
 
-1. Скачайте **`OffTimer.exe`** на [странице релизов](https://github.com/IAMBloodSUCKER/OffTimer/releases/latest)
-2. Запустите файл и пройдите установку
-3. Запускайте **OffTimer** из меню Пуск
+1. Скачай `OffTimer.exe` по ссылке выше
+2. Запусти и установи
+3. Открывай из меню Пуск
 
 ## Использование
 
-1. Выберите **действие** (выключение, перезагрузка, гибернация, сон)
-2. Укажите время: **через** N часов/минут или **в точное время** (`ЧЧ:ММ`)
-3. Нажмите **Запустить**
-4. За 60 секунд до события появится предупреждение — его можно отменить
-5. Крестик окна сворачивает приложение в трей
+Выбери действие и время, нажми **Запустить**. За минуту до события покажет предупреждение — можно отменить. Крестик сворачивает в трей.
 
 ## Удаление
 
-**Параметры Windows** → **Приложения** → **OffTimer** → **Удалить**
+Параметры Windows → Приложения → OffTimer → Удалить.
