@@ -16,7 +16,7 @@ import java.awt.event.WindowEvent;
 
 public class MainApp {
 
-    private static final String VERSION = "1.0.24";
+    private static final String VERSION = "1.0.25";
 
     private JFrame frame;
     private JComboBox<ActionType> actionCombo;
@@ -247,7 +247,7 @@ public class MainApp {
 
         scheduler.setOnWarning(() -> SwingUtilities.invokeLater(() -> {
             if (trayController != null) {
-                trayController.showWarning(scheduler.getCurrentAction(), this::cancelTimer);
+                trayController.showWarning(scheduler.getCurrentAction());
             }
         }));
 

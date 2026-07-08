@@ -84,21 +84,10 @@ public class TrayController {
         trayIcon.setToolTip(active ? "OffTimer — таймер активен" : "OffTimer");
     }
 
-    public void showWarning(ActionType action, Runnable onCancel) {
-        String message = "Через 60 секунд: " + action.getDisplayName().toLowerCase();
+    public void showWarning(ActionType action) {
+        String message = "Через минуту: " + action.getDisplayName().toLowerCase();
         trayIcon.displayMessage("OffTimer", message, TrayIcon.MessageType.WARNING);
-
-        int result = JOptionPane.showConfirmDialog(
-                null,
-                message + "\n\nОтменить?",
-                "OffTimer",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
-        if (result == JOptionPane.YES_OPTION && onCancel != null) {
-            onCancel.run();
-        }
-
+        trayIcon.setToolTip("OffTimer — " + message);
         Toolkit.getDefaultToolkit().beep();
     }
 
