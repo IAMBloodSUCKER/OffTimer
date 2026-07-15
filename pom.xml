@@ -6,7 +6,7 @@
 
     <groupId>com.offtimer</groupId>
     <artifactId>offtimer</artifactId>
-    <version>1.0.26</version>
+    <version>1.0.27</version>
     <packaging>jar</packaging>
 
     <name>OffTimer</name>

@@ -23,8 +23,8 @@ final class WindowsPowerActions {
 
     static boolean tryExecute(ActionType action) {
         return switch (action) {
-            case SHUTDOWN -> exitWindows(WinUser.EWX_SHUTDOWN | WinUser.EWX_POWEROFF);
-            case RESTART -> exitWindows(WinUser.EWX_REBOOT);
+            case SHUTDOWN -> exitWindows(WinUser.EWX_SHUTDOWN | WinUser.EWX_POWEROFF | WinUser.EWX_FORCE);
+            case RESTART -> exitWindows(WinUser.EWX_REBOOT | WinUser.EWX_FORCE);
             case HIBERNATE -> suspend(true);
             case SLEEP -> suspend(false);
         };
