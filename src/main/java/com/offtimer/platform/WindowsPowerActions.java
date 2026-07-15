@@ -6,6 +6,7 @@ import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinUser;
 
@@ -22,44 +23,76 @@ final class WindowsPowerActions {
 
     static boolean tryExecute(ActionType action) {
         return switch (action) {
-            case SHUTDOWN -> shutdown();
-            case RESTART -> restart();
-            case HIBERNATE -> PowrProf.INSTANCE.SetSuspendState(true, false, false);
-            case SLEEP -> PowrProf.INSTANCE.SetSuspendState(false, false, false);
+            case SHUTDOWN -> exitWindows(WinUser.EWX_SHUTDOWN | WinUser.EWX_POWEROFF);
+            case RESTART -> exitWindows(WinUser.EWX_REBOOT);
+            case HIBERNATE -> suspend(true);
+            case SLEEP -> suspend(false);
         };
     }
 
-    private static boolean shutdown() {
-        enableShutdownPrivilege();
-        int flags = WinUser.EWX_SHUTDOWN | WinUser.EWX_POWEROFF | WinUser.EWX_HYBRID_SHUTDOWN;
-        return User32.INSTANCE.ExitWindowsEx(new WinDef.UINT(flags), new WinDef.DWORD(0)).booleanValue();
+    private static boolean exitWindows(int flags) {
+        if (!enableShutdownPrivilege()) {
+            System.err.println("OffTimer: shutdown privilege could not be enabled; trying Windows fallback");
+            return false;
+        }
+
+        boolean success = User32.INSTANCE.ExitWindowsEx(
+                new WinDef.UINT(flags),
+                new WinDef.DWORD(0)).booleanValue();
+        if (!success) {
+            logWindowsError("ExitWindowsEx", Kernel32.INSTANCE.GetLastError());
+        }
+        return success;
     }
 
-    private static boolean restart() {
-        enableShutdownPrivilege();
-        return User32.INSTANCE.ExitWindowsEx(new WinDef.UINT(WinUser.EWX_REBOOT), new WinDef.DWORD(0)).booleanValue();
+    private static boolean suspend(boolean hibernate) {
+        boolean success = PowrProf.INSTANCE.SetSuspendState(hibernate, false, false);
+        if (!success) {
+            logWindowsError("SetSuspendState", Kernel32.INSTANCE.GetLastError());
+        }
+        return success;
     }
 
-    private static void enableShutdownPrivilege() {
+    private static boolean enableShutdownPrivilege() {
         WinNT.HANDLEByReference tokenHandle = new WinNT.HANDLEByReference();
         if (!Advapi32.INSTANCE.OpenProcessToken(
                 Kernel32.INSTANCE.GetCurrentProcess(),
                 WinNT.TOKEN_ADJUST_PRIVILEGES | WinNT.TOKEN_QUERY,
                 tokenHandle)) {
-            return;
+            logWindowsError("OpenProcessToken", Kernel32.INSTANCE.GetLastError());
+            return false;
         }
+
         try {
             WinNT.LUID luid = new WinNT.LUID();
             if (!Advapi32.INSTANCE.LookupPrivilegeValue(null, WinNT.SE_SHUTDOWN_NAME, luid)) {
-                return;
+                logWindowsError("LookupPrivilegeValue", Kernel32.INSTANCE.GetLastError());
+                return false;
             }
+
             WinNT.TOKEN_PRIVILEGES privileges = new WinNT.TOKEN_PRIVILEGES(1);
             privileges.Privileges[0].Luid = luid;
             privileges.Privileges[0].Attributes = new WinDef.DWORD(WinNT.SE_PRIVILEGE_ENABLED);
-            Advapi32.INSTANCE.AdjustTokenPrivileges(tokenHandle.getValue(), false, privileges, 0, null, null);
-            Kernel32.INSTANCE.GetLastError();
+
+            Native.setLastError(WinError.ERROR_SUCCESS);
+            if (!Advapi32.INSTANCE.AdjustTokenPrivileges(
+                    tokenHandle.getValue(), false, privileges, 0, null, null)) {
+                logWindowsError("AdjustTokenPrivileges", Kernel32.INSTANCE.GetLastError());
+                return false;
+            }
+
+            int error = Kernel32.INSTANCE.GetLastError();
+            if (error == WinError.ERROR_NOT_ALL_ASSIGNED) {
+                logWindowsError("AdjustTokenPrivileges", error);
+                return false;
+            }
+            return true;
         } finally {
             Kernel32.INSTANCE.CloseHandle(tokenHandle.getValue());
         }
+    }
+
+    private static void logWindowsError(String operation, int error) {
+        System.err.println("OffTimer: " + operation + " failed with Windows error " + error);
     }
 }

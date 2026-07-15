@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ShutdownScheduler {
@@ -100,13 +101,14 @@ public class ShutdownScheduler {
     }
 
     public void start(ActionType action, long totalSeconds) {
+        Objects.requireNonNull(action, "action");
         cancel(false);
         currentAction = action;
         remainingSeconds = totalSeconds;
         warningShown.set(false);
 
         tickFuture = executor.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
-        executeFuture = executor.schedule(this::execute, totalSeconds, TimeUnit.SECONDS);
+        executeFuture = executor.schedule(() -> execute(action), totalSeconds, TimeUnit.SECONDS);
     }
 
     public void cancel() {
@@ -152,7 +154,7 @@ public class ShutdownScheduler {
         }
     }
 
-    private void execute() {
+    private void execute(ActionType action) {
         if (tickFuture != null) {
             tickFuture.cancel(false);
             tickFuture = null;
@@ -160,11 +162,15 @@ public class ShutdownScheduler {
         executeFuture = null;
         remainingSeconds = 0;
 
-        if (onComplete != null) {
-            onComplete.run();
+        try {
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        } catch (RuntimeException e) {
+            System.err.println("OffTimer: timer completion callback failed: " + e.getMessage());
+        } finally {
+            PowerActions.execute(action);
         }
-
-        PowerActions.execute(currentAction);
     }
 
     private void runCancelCommand() {

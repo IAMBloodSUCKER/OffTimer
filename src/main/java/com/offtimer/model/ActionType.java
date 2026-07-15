@@ -42,8 +42,8 @@ public enum ActionType {
 
     private List<String> windowsCommand() {
         return switch (this) {
-            case SHUTDOWN -> List.of("shutdown", "/s", "/t", "0");
-            case RESTART -> List.of("shutdown", "/r", "/t", "0");
+            case SHUTDOWN -> List.of("shutdown", "/s", "/t", "0", "/f");
+            case RESTART -> List.of("shutdown", "/r", "/t", "0", "/f");
             case HIBERNATE -> List.of("shutdown", "/h");
             case SLEEP -> List.of("rundll32", "powrprof.dll,SetSuspendState", "0", "1", "0");
         };

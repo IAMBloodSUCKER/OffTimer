@@ -4,6 +4,7 @@ import com.offtimer.model.ActionType;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public final class PowerActions {
 
@@ -11,6 +12,7 @@ public final class PowerActions {
     }
 
     public static void execute(ActionType action) {
+        Objects.requireNonNull(action, "action");
         if (isWindows() && WindowsPowerActions.tryExecute(action)) {
             return;
         }
@@ -24,7 +26,8 @@ public final class PowerActions {
     private static void runProcess(List<String> command) {
         try {
             new ProcessBuilder(command).start();
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            System.err.println("OffTimer: failed to start power command " + command + ": " + e.getMessage());
         }
     }
 }
