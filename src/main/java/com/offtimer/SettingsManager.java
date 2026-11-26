@@ -36,10 +36,34 @@ public class SettingsManager {
             return AppSettings.defaults();
         }
         try (Reader reader = Files.newBufferedReader(settingsPath)) {
-            AppSettings settings = GSON.fromJson(reader, AppSettings.class);
-            return settings != null ? settings : AppSettings.defaults();
+            AppSettings settings;
+            try {
+                settings = GSON.fromJson(reader, AppSettings.class);
+            } catch (RuntimeException e) {
+                return AppSettings.defaults();
+            }
+            if (settings == null) {
+                return AppSettings.defaults();
+            }
+            sanitize(settings);
+            return settings;
         } catch (IOException e) {
             return AppSettings.defaults();
+        }
+    }
+
+    private static void sanitize(AppSettings s) {
+        if (s.action == null || s.action.isBlank()) {
+            s.action = ActionType.SHUTDOWN.name();
+        }
+        if (s.timerMode == null || s.timerMode.isBlank()) {
+            s.timerMode = TimerMode.COUNTDOWN.name();
+        }
+        if (s.countdownMinutes < 0 || s.countdownMinutes > 24 * 60) {
+            s.countdownMinutes = 10;
+        }
+        if (s.absoluteTime == null) {
+            s.absoluteTime = "22:30";
         }
     }
 
@@ -64,6 +88,9 @@ public class SettingsManager {
         }
 
         public ActionType getAction() {
+            if (action == null || action.isBlank()) {
+                return ActionType.SHUTDOWN;
+            }
             try {
                 return ActionType.valueOf(action);
             } catch (IllegalArgumentException e) {
@@ -72,6 +99,9 @@ public class SettingsManager {
         }
 
         public TimerMode getTimerMode() {
+            if (timerMode == null || timerMode.isBlank()) {
+                return TimerMode.COUNTDOWN;
+            }
             try {
                 return TimerMode.valueOf(timerMode);
             } catch (IllegalArgumentException e) {
