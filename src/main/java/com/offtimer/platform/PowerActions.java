@@ -13,10 +13,19 @@ public final class PowerActions {
 
     public static void execute(ActionType action) {
         Objects.requireNonNull(action, "action");
-        if (isWindows() && WindowsPowerActions.tryExecute(action)) {
-            return;
+        boolean handled = false;
+        if (isWindows()) {
+            try {
+                handled = WindowsPowerActions.tryExecute(action);
+            } catch (Throwable t) {
+                // JNA can fail at load/runtime time (missing native lib, etc.).
+                // Never let that swallow the action: fall back to the OS command.
+                System.err.println("OffTimer: native power action failed (" + t + "); falling back to system command");
+            }
         }
-        runProcess(action.buildCommand());
+        if (!handled) {
+            runProcess(action.buildCommand());
+        }
     }
 
     private static boolean isWindows() {

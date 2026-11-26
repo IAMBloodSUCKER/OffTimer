@@ -15,7 +15,7 @@ final class WindowsPowerActions {
     interface PowrProf extends com.sun.jna.Library {
         PowrProf INSTANCE = Native.load("PowrProf", PowrProf.class);
 
-        boolean SetSuspendState(boolean hibernate, boolean forceCritical, boolean disableWakeEvent);
+        byte SetSuspendState(byte hibernate, byte forceCritical, byte disableWakeEvent);
     }
 
     private WindowsPowerActions() {
@@ -46,11 +46,13 @@ final class WindowsPowerActions {
     }
 
     private static boolean suspend(boolean hibernate) {
-        boolean success = PowrProf.INSTANCE.SetSuspendState(hibernate, false, false);
-        if (!success) {
+        // SetSuspendState uses Win32 BOOLEAN (1 byte), so declare parameters as byte
+        // to match the ABI exactly rather than the 4-byte BOOL that boolean maps to.
+        byte result = PowrProf.INSTANCE.SetSuspendState((byte) (hibernate ? 1 : 0), (byte) 0, (byte) 0);
+        if (result == 0) {
             logWindowsError("SetSuspendState", Kernel32.INSTANCE.GetLastError());
         }
-        return success;
+        return result != 0;
     }
 
     private static boolean enableShutdownPrivilege() {
